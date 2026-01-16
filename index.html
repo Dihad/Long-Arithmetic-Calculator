@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Long Arithmetic Calculator</title>
+<style>
+:root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --accent: #f69f3b;
+    --accent-hover: #ff8800;
+    --text: #f8fafc;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --grid-line: rgba(59, 130, 246, 0.2);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --fontSize: 18px;
+    --digit-width: 1.2em;
+    --highlight-color: #f69f3b;
+    --result-color: #10b981;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+.app {
+    width: 100%;
+    max-width: 900px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    color: var(--accent);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+/* Operation tabs */
+.operation-tabs {
+    display: flex;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+}
+
+.tab {
+    flex: 1;
+    padding: 16px;
+    text-align: center;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    color: var(--text-muted);
+}
+
+.tab.active {
+    background: rgba(246, 159, 59, 0.2);
+    color: var(--accent);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.tab:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+    .cards-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 28px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+}
+
+.input-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.input-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.input-row label {
+    font-weight: 600;
+    color: var(--accent);
+    min-width: 80px;
+}
+
+.input-row input {
+    flex: 1;
+    padding: 16px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    font-size: 18px;
+    font-family: 'Courier New', monospace;
+    transition: all 0.3s ease;
+}
+
+.input-row input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.btn-calculate {
+    padding: 18px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 10px;
+}
+
+.btn-calculate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+}
+
+.controls-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.control-group h3 {
+    color: var(--accent);
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+}
+
+.toggle-group {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.toggle-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.toggle-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.toggle-item.active {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: var(--accent);
+}
+
+.toggle-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.toggle-item label {
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.slider-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.slider-group label {
+    min-width: 80px;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.slider-group input[type="range"] {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.slider-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 3px solid var(--card);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.slider-value {
+    min-width: 40px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.output-card {
+    grid-column: 1 / -1;
+    overflow-x: auto;
+    padding: 24px;
+}
+
+.multiplication-output, .division-output {
+    font-family: 'Courier New', monospace;
+    font-size: var(--fontSize);
+    direction: ltr;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    min-height: 200px;
+    display: none;
+}
+
+.multiplication-output.active, .division-output.active {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+
+/* Multiplication styles */
+.multiplication-output {
+    line-height: 1.8;
+}
+
+/* Division specific styles */
+.division-output {
+    font-family: 'Courier New', monospace;
+    line-height: 1.4;
+    white-space: pre;
+    overflow-x: auto;
+}
+
+.division-line {
+    margin: 0;
+    padding: 0;
+    letter-spacing: 0.5px;
+    white-space: pre;
+    font-family: 'Courier New', monospace;
+    line-height: 1.2;
+    font-size: var(--fontSize);
+}
+
+/* For Bangla numbers, ensure proper monospace */
+.bangla-digit {
+    font-family: 'Courier New', monospace;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+}
+
+/* Digit grid system for multiplication */
+.digit-container {
+    display: flex;
+    justify-content: flex-end;
+    position: relative;
+    min-height: calc(var(--fontSize) * 1.8);
+    align-items: center;
+}
+
+/* Vertical lines between digits */
+.with-lines .digit-container {
+    gap: 0;
+}
+
+.with-lines .digit {
+    width: var(--digit-width);
+    text-align: center;
+    position: relative;
+    padding: 4px 2px;
+    font-variant-numeric: tabular-nums;
+}
+
+.with-lines .digit:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--grid-line);
+}
+
+/* Horizontal lines */
+.with-lines .digit-container::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--grid-line), transparent);
+}
+
+.with-lines .digit-container:last-child::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--grid-line), transparent);
+}
+
+/* Without lines - simple display */
+.without-lines .digit-container {
+    gap: 2px;
+}
+
+.without-lines .digit {
+    width: auto;
+    padding: 0 1px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Special styling */
+.operator {
+    color: var(--accent);
+    font-weight: 700;
+    margin-right: 8px;
+}
+
+.result-line {
+    color: var(--success);
+    font-weight: 800;
+    font-size: calc(var(--fontSize) * 1.1);
+    margin-top: 4px;
+    border-top: 2px solid var(--border);
+    padding-top: 8px;
+}
+
+.divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 12px 0;
+    width: 100%;
+}
+
+.info-card {
+    margin-top: 24px;
+    padding: 24px;
+}
+
+.info-card h3 {
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-size: 1.3rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.info-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 16px;
+    border-radius: 10px;
+    border-left: 4px solid var(--accent);
+}
+
+.info-item h4 {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.info-item p {
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
+#numberSpelling {
+    font-style: italic;
+    color: var(--accent);
+    min-height: 1.5em;
+}
+
+.error-message {
+    color: var(--error);
+    text-align: center;
+    padding: 16px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 10px;
+    border-left: 4px solid var(--error);
+    display: none;
+    margin-bottom: 16px;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+    display: none;
+}
+
+.loading.spinning {
+    display: block;
+}
+
+footer {
+    text-align: center;
+    margin-top: 40px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+/* Language display */
+.language-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.language-display span {
+    padding: 4px 8px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 6px;
+    color: var(--accent);
+}
+
+/* Animation for calculation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .header h1 {
+        font-size: 2rem;
+    }
+    
+    .card {
+        padding: 20px;
+    }
+    
+    .input-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .input-row label {
+        margin-bottom: 8px;
+    }
+    
+    .operation-tabs {
+        flex-direction: column;
+    }
+}
+
+/* Division specific coloring */
+.divisor-orange {
+    color: var(--accent) !important;
+    font-weight: bold;
+}
+
+.quotient-green {
+    color: var(--success) !important;
+    font-weight: bold;
+}
+
+.remainder-green {
+    color: var(--success) !important;
+    font-weight: bold;
+}
+
+.brought-down-highlight {
+    color: var(--accent) !important;
+    font-weight: bold;
+    background-color: rgba(246, 159, 59, 0.1);
+    padding: 0 1px;
+    border-radius: 2px;
+}
+
+/* Horizontal line styling - extended lines */
+.division-line.horizontal-line {
+    color: var(--text);
+    letter-spacing: 0.5px;
+}
+
+/* Extended lines - make lines longer/thicker */
+.extended-lines .division-line.horizontal-line {
+    color: var(--text);
+    letter-spacing: 2px;
+    font-size: calc(var(--fontSize) * 1.2);
+}
+
+/* Extended lines - make the line characters thicker */
+.extended-lines .division-line.horizontal-line .dash {
+    font-weight: bold;
+    color: var(--text);
+    opacity: 0.8;
+}
+
+/* Division alignment */
+.division-output .division-line {
+    font-family: 'Courier New', monospace;
+    white-space: pre;
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+}
+
+/* Bangla text styling */
+.bangla-text {
+    font-family: 'Arial', 'Siyam Rupali', 'Kalpurush', sans-serif;
+    font-size: 1.1em;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+    <div class="header">
+        <h1 id="appTitle">Long Arithmetic Calculator</h1>
+        <p id="appSubtitle">Calculate and visualize long multiplication and division with detailed steps</p>
+    </div>
+
+    <div class="operation-tabs">
+        <div class="tab active" data-operation="multiplication" onclick="switchOperation('multiplication')">
+            <span id="multiplicationTab">Multiplication</span>
+        </div>
+        <div class="tab" data-operation="division" onclick="switchOperation('division')">
+            <span id="divisionTab">Division</span>
+        </div>
+    </div>
+
+    <div class="cards-container">
+        <div class="card input-card">
+            <div class="input-row">
+                <label id="firstNumberLabel">First Number:</label>
+                <input type="text" id="num1" inputmode="numeric" placeholder="12345" autocomplete="off">
+            </div>
+            <div class="input-row">
+                <label id="secondNumberLabel">Second Number:</label>
+                <input type="text" id="num2" inputmode="numeric" placeholder="6789" autocomplete="off">
+            </div>
+            <button class="btn-calculate" onclick="calculate()" id="calculateBtn">
+                Calculate
+            </button>
+        </div>
+
+        <div class="card controls-card">
+            <div class="control-group">
+                <h3 id="displayOptions">Display Options</h3>
+                <div class="toggle-group" id="multiplicationOptions">
+                    <div class="toggle-item active" onclick="toggleSetting('digitLines')">
+                        <input type="checkbox" id="digitLinesToggle" checked>
+                        <label for="digitLinesToggle" id="digitLinesLabel">Digit Lines</label>
+                    </div>
+                    <div class="toggle-item active" onclick="toggleSetting('showSteps')">
+                        <input type="checkbox" id="showStepsToggle" checked>
+                        <label for="showStepsToggle" id="showStepsLabel">Show Steps</label>
+                    </div>
+                </div>
+                <div class="toggle-group" id="divisionOptions" style="display: none;">
+                    <div class="toggle-item" onclick="toggleSetting('highlightBroughtDown')">
+                        <input type="checkbox" id="highlightBroughtDownToggle">
+                        <label for="highlightBroughtDownToggle" id="highlightBroughtDownLabel">Highlight Brought-Down</label>
+                    </div>
+                    <div class="toggle-item" onclick="toggleSetting('extendedLines')">
+                        <input type="checkbox" id="extendedLinesToggle">
+                        <label for="extendedLinesToggle" id="extendedLinesLabel">Extended Lines</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3 id="languageOptions">Language</h3>
+                <div class="toggle-group">
+                    <div class="toggle-item active" onclick="setLanguage('en')">
+                        <input type="radio" name="language" id="langEnglish" checked>
+                        <label for="langEnglish">English</label>
+                    </div>
+                    <div class="toggle-item" onclick="setLanguage('bn')">
+                        <input type="radio" name="language" id="langBangla">
+                        <label for="langBangla">বাংলা (Bangla)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-group">
+                    <label id="fontSizeLabel">Font Size:</label>
+                    <input type="range" id="fontSizeSlider" min="12" max="36" value="18" step="1" 
+                           oninput="updateFontSize(this.value)">
+                    <span class="slider-value" id="fontSizeValue">18</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card output-card">
+            <div class="error-message" id="errorMessage"></div>
+            <div class="loading" id="loadingSpinner">Calculating...</div>
+            
+            <!-- Multiplication Output -->
+            <div id="multiplicationResult" class="multiplication-output active without-lines">
+                <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+                    Enter numbers above and click "Calculate" to see the long multiplication process
+                </div>
+            </div>
+            
+            <!-- Division Output -->
+            <div id="divisionResult" class="division-output">
+                <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+                    Enter numbers above and click "Calculate" to see the long division process
+                </div>
+            </div>
+        </div>
+
+        <div class="card info-card">
+            <h3 id="calculationInfo">Calculation Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4 id="expressionLabel">Expression</h4>
+                    <p id="expressionText">-</p>
+                </div>
+                <div class="info-item">
+                    <h4 id="resultLabel">Result</h4>
+                    <p id="resultText">-</p>
+                </div>
+                <div class="info-item">
+                    <h4 id="spellingLabel">Number in Words</h4>
+                    <p id="numberSpelling">-</p>
+                    <div class="language-display">
+                        Language: <span id="currentLanguageDisplay">English</span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <h4 id="stepsLabel">Steps</h4>
+                    <p id="stepsText">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Long Arithmetic Calculator &copy; <span id="currentYear">2025</span></p>
+        <p id="instructionText">Select an operation and enter two numbers to see the detailed calculation process</p>
+    </footer>
+</div>
+
+<script>
+// Language configuration
+const translations = {
+    en: {
+        appTitle: "Long Arithmetic Calculator",
+        appSubtitle: "Calculate and visualize long multiplication and division with detailed steps",
+        firstNumberLabel: "First Number:",
+        secondNumberLabel: "Second Number:",
+        multiplicationTab: "Multiplication",
+        divisionTab: "Division",
+        calculateBtn: "Calculate",
+        displayOptions: "Display Options",
+        digitLinesLabel: "Digit Lines",
+        showStepsLabel: "Show Steps",
+        extendedLinesLabel: "Extended Lines",
+        highlightBroughtDownLabel: "Highlight Brought-Down",
+        languageOptions: "Language",
+        expressionLabel: "Expression",
+        resultLabel: "Result",
+        spellingLabel: "Number in Words",
+        stepsLabel: "Steps",
+        instructionText: "Select an operation and enter two numbers to see the detailed calculation process",
+        multiplication: "Multiplication",
+        division: "Division",
+        remainder: "remainder",
+        currentLanguage: "English",
+        digits: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+        multiplySymbol: "×",
+        divideSymbol: "÷",
+        units: ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"],
+        teens: ["ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"],
+        tens: ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"],
+        scales: ["", "thousand", "million", "billion", "trillion", "quadrillion", "quintillion"]
+    },
+    bn: {
+        appTitle: "দীর্ঘ গাণিতিক ক্যালকুলেটর",
+        appSubtitle: "বিস্তারিত ধাপ সহ দীর্ঘ গুণ এবং ভাগ গণনা এবং ভিজ্যুয়ালাইজ করুন",
+        firstNumberLabel: "প্রথম সংখ্যা:",
+        secondNumberLabel: "দ্বিতীয় সংখ্যা:",
+        multiplicationTab: "গুণ",
+        divisionTab: "ভাগ",
+        calculateBtn: "গণনা করুন",
+        displayOptions: "প্রদর্শন বিকল্প",
+        digitLinesLabel: "অঙ্কের লাইন",
+        showStepsLabel: "ধাপ দেখান",
+        extendedLinesLabel: "বর্ধিত লাইন",
+        highlightBroughtDownLabel: "আনীত সংখ্যা হাইলাইট করুন",
+        languageOptions: "ভাষা",
+        expressionLabel: "অভিব্যক্তি",
+        resultLabel: "ফলাফল",
+        spellingLabel: "শব্দে সংখ্যা",
+        stepsLabel: "ধাপ",
+        instructionText: "একটি অপারেশন নির্বাচন করুন এবং দুটি সংখ্যা লিখুন বিস্তারিত গণনা প্রক্রিয়া দেখতে",
+        multiplication: "গুণ",
+        division: "ভাগ",
+        remainder: "ভাগশেষ",
+        currentLanguage: "বাংলা",
+        digits: ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"],
+        multiplySymbol: "×",
+        divideSymbol: "÷"
+    }
+};
+
+// Bangla number dictionary 1-99
+const banglaNumbers = {
+    0: "শূন্য",
+    1: "এক",
+    2: "দুই",
+    3: "তিন",
+    4: "চার",
+    5: "পাঁচ",
+    6: "ছয়",
+    7: "সাত",
+    8: "আট",
+    9: "নয়",
+    10: "দশ",
+    11: "এগারো",
+    12: "বারো",
+    13: "তেরো",
+    14: "চৌদ্দ",
+    15: "পনেরো",
+    16: "ষোল",
+    17: "সতেরো",
+    18: "আঠারো",
+    19: "উনিশ",
+    20: "বিশ",
+    21: "একুশ",
+    22: "বাইশ",
+    23: "তেইশ",
+    24: "চব্বিশ",
+    25: "পঁচিশ",
+    26: "ছাব্বিশ",
+    27: "সাতাশ",
+    28: "আঠাশ",
+    29: "ঊনত্রিশ",
+    30: "ত্রিশ",
+    31: "একত্রিশ",
+    32: "বত্রিশ",
+    33: "তেত্রিশ",
+    34: "চৌত্রিশ",
+    35: "পঁয়ত্রিশ",
+    36: "ছত্রিশ",
+    37: "সাঁইত্রিশ",
+    38: "আটত্রিশ",
+    39: "ঊনচল্লিশ",
+    40: "চল্লিশ",
+    41: "একচল্লিশ",
+    42: "বিয়াল্লিশ",
+    43: "তেতাল্লিশ",
+    44: "চুয়াল্লিশ",
+    45: "পঁয়তাল্লিশ",
+    46: "ছিয়াল্লিশ",
+    47: "সাতচল্লিশ",
+    48: "আটচল্লিশ",
+    49: "ঊনপঞ্চাশ",
+    50: "পঞ্চাশ",
+    51: "একান্ন",
+    52: "বাহান্ন",
+    53: "তেপ্পান্ন",
+    54: "চুয়ান্ন",
+    55: "পঁচান্ন",
+    56: "ছাপ্পান্ন",
+    57: "সাতান্ন",
+    58: "আটান্ন",
+    59: "ঊনষাট",
+    60: "ষাট",
+    61: "একষট্টি",
+    62: "বাষট্টি",
+    63: "তেষট্টি",
+    64: "চৌষট্টি",
+    65: "পঁয়ষট্টি",
+    66: "ছেষট্টি",
+    67: "সাতষট্টি",
+    68: "আটষট্টি",
+    69: "ঊনসত্তর",
+    70: "সত্তর",
+    71: "একাত্তর",
+    72: "বাহাত্তর",
+    73: "তেহাত্তর",
+    74: "চুয়াত্তর",
+    75: "পঁচাত্তর",
+    76: "ছিয়াত্তর",
+    77: "সাতাত্তর",
+    78: "আটাত্তর",
+    79: "ঊনআশি",
+    80: "আশি",
+    81: "একাশি",
+    82: "বিরাশি",
+    83: "তিরাশি",
+    84: "চুরাশি",
+    85: "পঁচাশি",
+    86: "ছিয়াশি",
+    87: "সাতাশি",
+    88: "আটাশি",
+    89: "ঊননব্বই",
+    90: "নব্বই",
+    91: "একানব্বই",
+    92: "বিরানব্বই",
+    93: "তিরানব্বই",
+    94: "চুরানব্বই",
+    95: "পঁচানব্বই",
+    96: "ছিয়ানব্বই",
+    97: "সাতানব্বই",
+    98: "আটানব্বই",
+    99: "নিরানব্বই"
+};
+
+// Global variables
+let currentOperation = 'multiplication';
+let currentLang = 'en';
+let digitLinesEnabled = true;
+let showStepsEnabled = true;
+let extendedLinesEnabled = false;
+let highlightBroughtDownEnabled = false;
+
+// DOM Elements
+const elements = {
+    num1: document.getElementById('num1'),
+    num2: document.getElementById('num2'),
+    multiplicationResult: document.getElementById('multiplicationResult'),
+    divisionResult: document.getElementById('divisionResult'),
+    errorMessage: document.getElementById('errorMessage'),
+    loadingSpinner: document.getElementById('loadingSpinner'),
+    expressionText: document.getElementById('expressionText'),
+    resultText: document.getElementById('resultText'),
+    numberSpelling: document.getElementById('numberSpelling'),
+    stepsText: document.getElementById('stepsText'),
+    currentLanguageDisplay: document.getElementById('currentLanguageDisplay')
+};
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Set current year
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+    
+    // Set up number inputs with validation
+    elements.num1.addEventListener('input', validateNumberInput);
+    elements.num2.addEventListener('input', validateNumberInput);
+    
+    // Prevent paste of non-numeric characters
+    elements.num1.addEventListener('paste', handlePaste);
+    elements.num2.addEventListener('paste', handlePaste);
+    
+    // Set up example values
+    elements.num1.value = "52647";
+    elements.num2.value = "63";
+    
+    // Auto-calculate for demonstration
+    setTimeout(() => calculate(), 100);
+});
+
+function validateNumberInput(e) {
+    // Convert Bangla digits to English for validation
+    let value = e.target.value;
+    const banglaToEnglish = {
+        '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+        '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+    };
+    
+    // Replace Bangla digits with English digits
+    value = value.split('').map(char => banglaToEnglish[char] || char).join('');
+    
+    // Remove non-numeric characters
+    value = value.replace(/[^0-9]/g, '');
+    
+    // Convert back to current language if needed
+    if (currentLang === 'bn') {
+        const englishToBangla = {
+            '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪',
+            '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯'
+        };
+        value = value.split('').map(char => englishToBangla[char] || char).join('');
+    }
+    
+    e.target.value = value;
+}
+
+function handlePaste(e) {
+    e.preventDefault();
+    const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+    
+    // Convert Bangla digits to English for validation
+    let value = pastedText;
+    const banglaToEnglish = {
+        '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+        '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+    };
+    
+    // Replace Bangla digits with English digits
+    value = value.split('').map(char => banglaToEnglish[char] || char).join('');
+    
+    // Remove non-numeric characters
+    value = value.replace(/[^0-9]/g, '');
+    
+    // Convert back to current language if needed
+    if (currentLang === 'bn') {
+        const englishToBangla = {
+            '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪',
+            '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯'
+        };
+        value = value.split('').map(char => englishToBangla[char] || char).join('');
+    }
+    
+    e.target.value = value;
+}
+
+function switchOperation(operation) {
+    currentOperation = operation;
+    
+    // Update active tab
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelector(`.tab[data-operation="${operation}"]`).classList.add('active');
+    
+    // Update output display
+    if (operation === 'multiplication') {
+        elements.multiplicationResult.classList.add('active');
+        elements.divisionResult.classList.remove('active');
+        
+        // Show multiplication options, hide division options
+        document.getElementById('multiplicationOptions').style.display = 'flex';
+        document.getElementById('divisionOptions').style.display = 'none';
+    } else {
+        elements.multiplicationResult.classList.remove('active');
+        elements.divisionResult.classList.add('active');
+        
+        // Show division options, hide multiplication options
+        document.getElementById('multiplicationOptions').style.display = 'none';
+        document.getElementById('divisionOptions').style.display = 'flex';
+    }
+    
+    // Update button text
+    document.getElementById('calculateBtn').textContent = translations[currentLang].calculateBtn;
+    
+    // Update placeholders based on operation
+    const placeholder1 = currentOperation === 'multiplication' ? "12345" : "52647";
+    const placeholder2 = currentOperation === 'multiplication' ? "6789" : "63";
+    
+    elements.num1.placeholder = convertDigits(placeholder1, 'en', currentLang);
+    elements.num2.placeholder = convertDigits(placeholder2, 'en', currentLang);
+    
+    // Update labels based on operation
+    if (currentOperation === 'multiplication') {
+        document.getElementById('firstNumberLabel').textContent = translations[currentLang].firstNumberLabel;
+        document.getElementById('secondNumberLabel').textContent = translations[currentLang].secondNumberLabel;
+    } else {
+        document.getElementById('firstNumberLabel').textContent = currentLang === 'en' ? "Dividend:" : "ভাজ্য:";
+        document.getElementById('secondNumberLabel').textContent = currentLang === 'en' ? "Divisor:" : "ভাজক:";
+    }
+    
+    // Recalculate if we have values
+    if (elements.num1.value && elements.num2.value) {
+        calculate();
+    }
+}
+
+function setLanguage(lang) {
+    currentLang = lang;
+    
+    // Update radio buttons
+    document.getElementById('langEnglish').checked = lang === 'en';
+    document.getElementById('langBangla').checked = lang === 'bn';
+    
+    // Update toggle items
+    document.querySelectorAll('.toggle-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    document.querySelectorAll('.toggle-item input:checked').forEach(input => {
+        input.closest('.toggle-item').classList.add('active');
+    });
+    
+    // Translate all UI elements
+    const t = translations[lang];
+    document.getElementById('appTitle').textContent = t.appTitle;
+    document.getElementById('appSubtitle').textContent = t.appSubtitle;
+    document.getElementById('firstNumberLabel').textContent = currentOperation === 'multiplication' ? t.firstNumberLabel : (lang === 'en' ? "Dividend:" : "ভাজ্য:");
+    document.getElementById('secondNumberLabel').textContent = currentOperation === 'multiplication' ? t.secondNumberLabel : (lang === 'en' ? "Divisor:" : "ভাজক:");
+    document.getElementById('multiplicationTab').textContent = t.multiplicationTab;
+    document.getElementById('divisionTab').textContent = t.divisionTab;
+    document.getElementById('calculateBtn').textContent = t.calculateBtn;
+    document.getElementById('displayOptions').textContent = t.displayOptions;
+    document.getElementById('digitLinesLabel').textContent = t.digitLinesLabel;
+    document.getElementById('showStepsLabel').textContent = t.showStepsLabel;
+    document.getElementById('extendedLinesLabel').textContent = t.extendedLinesLabel;
+    document.getElementById('highlightBroughtDownLabel').textContent = t.highlightBroughtDownLabel;
+    document.getElementById('languageOptions').textContent = t.languageOptions;
+    document.getElementById('expressionLabel').textContent = t.expressionLabel;
+    document.getElementById('resultLabel').textContent = t.resultLabel;
+    document.getElementById('spellingLabel').textContent = t.spellingLabel;
+    document.getElementById('stepsLabel').textContent = t.stepsLabel;
+    document.getElementById('instructionText').textContent = t.instructionText;
+    elements.currentLanguageDisplay.textContent = t.currentLanguage;
+    
+    // Update placeholders
+    const placeholder1 = currentOperation === 'multiplication' ? "12345" : "52647";
+    const placeholder2 = currentOperation === 'multiplication' ? "6789" : "63";
+    
+    elements.num1.placeholder = convertDigits(placeholder1, 'en', lang);
+    elements.num2.placeholder = convertDigits(placeholder2, 'en', lang);
+    
+    // Convert current input values
+    if (elements.num1.value) {
+        elements.num1.value = convertDigits(elements.num1.value, 'en', lang);
+    }
+    if (elements.num2.value) {
+        elements.num2.value = convertDigits(elements.num2.value, 'en', lang);
+    }
+    
+    // Recalculate and update display
+    if (elements.num1.value && elements.num2.value) {
+        calculate();
+    }
+}
+
+function convertDigits(numberStr, fromLang, toLang) {
+    if (fromLang === toLang) return numberStr;
+    
+    const fromDigits = translations[fromLang].digits;
+    const toDigits = translations[toLang].digits;
+    const digitMap = {};
+    
+    fromDigits.forEach((digit, index) => {
+        digitMap[digit] = toDigits[index];
+    });
+    
+    return numberStr.split('').map(char => digitMap[char] || char).join('');
+}
+
+function toggleSetting(setting) {
+    if (setting === 'digitLines') {
+        digitLinesEnabled = !digitLinesEnabled;
+        const toggle = document.getElementById('digitLinesToggle');
+        const item = toggle.closest('.toggle-item');
+        toggle.checked = digitLinesEnabled;
+        item.classList.toggle('active', digitLinesEnabled);
+    } else if (setting === 'showSteps') {
+        showStepsEnabled = !showStepsEnabled;
+        const toggle = document.getElementById('showStepsToggle');
+        const item = toggle.closest('.toggle-item');
+        toggle.checked = showStepsEnabled;
+        item.classList.toggle('active', showStepsEnabled);
+    } else if (setting === 'extendedLines') {
+        extendedLinesEnabled = !extendedLinesEnabled;
+        const toggle = document.getElementById('extendedLinesToggle');
+        const item = toggle.closest('.toggle-item');
+        toggle.checked = extendedLinesEnabled;
+        item.classList.toggle('active', extendedLinesEnabled);
+    } else if (setting === 'highlightBroughtDown') {
+        highlightBroughtDownEnabled = !highlightBroughtDownEnabled;
+        const toggle = document.getElementById('highlightBroughtDownToggle');
+        const item = toggle.closest('.toggle-item');
+        toggle.checked = highlightBroughtDownEnabled;
+        item.classList.toggle('active', highlightBroughtDownEnabled);
+    }
+    
+    if (elements.num1.value && elements.num2.value) {
+        calculate();
+    }
+}
+
+function updateFontSize(size) {
+    document.documentElement.style.setProperty('--fontSize', size + 'px');
+    document.documentElement.style.setProperty('--digit-width', (size * 0.8) + 'px');
+    document.getElementById('fontSizeValue').textContent = size;
+}
+
+function calculate() {
+    // Convert input values to English digits for calculation
+    let num1 = elements.num1.value.trim();
+    let num2 = elements.num2.value.trim();
+    
+    // Convert from current language to English for calculation
+    num1 = convertDigits(num1, currentLang, 'en');
+    num2 = convertDigits(num2, currentLang, 'en');
+    
+    // Validation
+    if (!num1 || !num2) {
+        showError("Please enter both numbers");
+        return;
+    }
+    
+    if (num1.length > 50 || num2.length > 50) {
+        showError("Numbers are too large (max 50 digits)");
+        return;
+    }
+    
+    // Validate divisor for division
+    if (currentOperation === 'division' && BigInt(num2) === 0n) {
+        showError("Divisor cannot be zero");
+        return;
+    }
+    
+    // Show loading
+    elements.loadingSpinner.classList.add('spinning');
+    elements.errorMessage.style.display = 'none';
+    
+    // Use setTimeout to allow UI to update
+    setTimeout(() => {
+        try {
+            if (currentOperation === 'multiplication') {
+                performMultiplication(num1, num2);
+            } else {
+                performDivision(num1, num2);
+            }
+            elements.loadingSpinner.classList.remove('spinning');
+        } catch (error) {
+            showError("Calculation error: " + error.message);
+            elements.loadingSpinner.classList.remove('spinning');
+        }
+    }, 100);
+}
+
+function performMultiplication(num1, num2) {
+    const a = BigInt(num1);
+    const b = BigInt(num2);
+    const result = a * b;
+    
+    // Convert numbers to current language for display
+    const num1Display = convertDigits(num1, 'en', currentLang);
+    const num2Display = convertDigits(num2, 'en', currentLang);
+    const resultDisplay = convertDigits(result.toString(), 'en', currentLang);
+    
+    // Display expression and result
+    elements.expressionText.textContent = `${num1Display} ${translations[currentLang].multiplySymbol} ${num2Display}`;
+    elements.resultText.textContent = resultDisplay;
+    
+    // Spell out the result using the improved spelling function
+    const spelling = spellOutNumber(result.toString(), currentLang);
+    elements.numberSpelling.textContent = spelling;
+    
+    // Display multiplication
+    displayMultiplication(num1, num2, result.toString());
+}
+
+function performDivision(dividend, divisor) {
+    const dividendBigInt = BigInt(dividend);
+    const divisorBigInt = BigInt(divisor);
+    
+    // Calculate quotient and remainder
+    const quotient = dividendBigInt / divisorBigInt;
+    const remainder = dividendBigInt % divisorBigInt;
+    
+    // Convert numbers to current language for display
+    const dividendDisplay = convertDigits(dividend, 'en', currentLang);
+    const divisorDisplay = convertDigits(divisor, 'en', currentLang);
+    const quotientDisplay = convertDigits(quotient.toString(), 'en', currentLang);
+    const remainderDisplay = convertDigits(remainder.toString(), 'en', currentLang);
+    
+    // Display expression and result
+    elements.expressionText.textContent = `${dividendDisplay} ${translations[currentLang].divideSymbol} ${divisorDisplay}`;
+    
+    if (remainder > 0n) {
+        elements.resultText.innerHTML = `<span class="quotient-green">${quotientDisplay}</span> (${translations[currentLang].remainder}: <span class="remainder-green">${remainderDisplay}</span>)`;
+    } else {
+        elements.resultText.innerHTML = `<span class="quotient-green">${quotientDisplay}</span>`;
+    }
+    
+    // Spell out both quotient and remainder using the improved spelling function
+    const quotientSpelling = spellOutNumber(quotient.toString(), currentLang);
+    let spelling = quotientSpelling;
+    
+    if (remainder > 0n) {
+        const remainderSpelling = spellOutNumber(remainder.toString(), currentLang);
+        if (currentLang === 'en') {
+            spelling = `${quotientSpelling} with remainder ${remainderSpelling}`;
+        } else {
+            spelling = `${quotientSpelling} এবং ভাগশেষ ${remainderSpelling}`;
+        }
+    }
+    
+    elements.numberSpelling.textContent = spelling;
+    
+    // Display division
+    displayDivision(dividend, divisor, quotient.toString(), remainder.toString());
+}
+
+function displayMultiplication(num1, num2, result) {
+    const container = elements.multiplicationResult;
+    container.innerHTML = '';
+    
+    // Apply lines styling
+    container.className = `multiplication-output active ${digitLinesEnabled ? 'with-lines' : 'without-lines'}`;
+    
+    const digits2 = num2.split('').reverse();
+    let partials = [];
+    let maxLength = Math.max(
+        num1.length,
+        num2.length + 1,
+        result.length
+    );
+    
+    // Calculate partial products
+    digits2.forEach((digit, index) => {
+        const partial = (BigInt(num1) * BigInt(digit) * (10n ** BigInt(index))).toString();
+        if (partial !== '0' || (showStepsEnabled && partial === '0' && index === 0)) {
+            partials.push({
+                value: partial,
+                digit: digit,
+                index: index
+            });
+            maxLength = Math.max(maxLength, partial.length);
+        }
+    });
+    
+    // Convert numbers to current language for display
+    const num1Display = convertDigits(num1, 'en', currentLang);
+    const num2Display = convertDigits(num2, 'en', currentLang);
+    const resultDisplay = convertDigits(result, 'en', currentLang);
+    const partialsDisplay = partials.map(p => ({
+        ...p,
+        value: convertDigits(p.value, 'en', currentLang),
+        digit: convertDigits(p.digit, 'en', currentLang)
+    }));
+    
+    // Create display lines
+    const lines = [];
+    
+    // First number
+    lines.push({
+        content: num1Display,
+        type: 'number'
+    });
+    
+    // Second number with ×
+    lines.push({
+        content: translations[currentLang].multiplySymbol + num2Display,
+        type: 'operator'
+    });
+    
+    // Divider
+    lines.push({ type: 'divider' });
+    
+    // Partial products (if enabled)
+    if (showStepsEnabled && partialsDisplay.length > 0) {
+        partialsDisplay.forEach(partial => {
+            lines.push({
+                content: partial.value,
+                type: 'partial',
+                note: `${partial.digit} ${translations[currentLang].multiplySymbol}`
+            });
+        });
+        
+        // Another divider before result
+        if (partialsDisplay.length > 0) {
+            lines.push({ type: 'divider' });
+        }
+    }
+    
+    // Result
+    lines.push({
+        content: resultDisplay,
+        type: 'result'
+    });
+    
+    // Calculate steps
+    elements.stepsText.textContent = `${partialsDisplay.length} ${currentLang === 'en' ? 'steps' : 'ধাপ'}`;
+    
+    // Render lines
+    lines.forEach(line => {
+        if (line.type === 'divider') {
+            const divider = document.createElement('div');
+            divider.className = 'divider';
+            container.appendChild(divider);
+        } else {
+            const lineDiv = document.createElement('div');
+            lineDiv.className = 'digit-container';
+            
+            // Add note if present
+            if (line.note) {
+                const note = document.createElement('span');
+                note.className = 'operator';
+                note.textContent = line.note;
+                lineDiv.appendChild(note);
+            }
+            
+            // Add digits
+            const padded = line.content.padStart(maxLength + (line.note ? 0 : 0));
+            for (let char of padded) {
+                const digitSpan = document.createElement('span');
+                digitSpan.className = 'digit bangla-digit';
+                digitSpan.textContent = char;
+                lineDiv.appendChild(digitSpan);
+            }
+            
+            // Add type-specific class
+            if (line.type === 'operator') {
+                lineDiv.classList.add('operator-line');
+            } else if (line.type === 'result') {
+                lineDiv.classList.add('result-line');
+            }
+            
+            container.appendChild(lineDiv);
+        }
+    });
+}
+
+function displayDivision(dividend, divisor, quotient, remainder) {
+    const container = elements.divisionResult;
+    container.innerHTML = '';
+    
+    // Apply extended lines class
+    if (extendedLinesEnabled) {
+        container.classList.add('extended-lines');
+    } else {
+        container.classList.remove('extended-lines');
+    }
+    
+    // Convert numbers to current language for display
+    const dividendDisplay = convertDigits(dividend, 'en', currentLang);
+    const divisorDisplay = convertDigits(divisor, 'en', currentLang);
+    const quotientDisplay = convertDigits(quotient, 'en', currentLang);
+    const remainderDisplay = convertDigits(remainder, 'en', currentLang);
+    
+    // Get the division steps and format them
+    const steps = getDivisionSteps(dividend, divisor, quotient);
+    const lines = formatDivisionSteps(steps, dividendDisplay, divisorDisplay, quotientDisplay, remainderDisplay);
+    
+    // Display all lines
+    lines.forEach(line => {
+        const lineDiv = document.createElement('div');
+        lineDiv.className = 'division-line bangla-digit';
+        lineDiv.innerHTML = line;
+        container.appendChild(lineDiv);
+    });
+    
+    // Calculate steps
+    const stepsCount = steps.length;
+    elements.stepsText.textContent = `${stepsCount} ${currentLang === 'en' ? 'steps' : 'ধাপ'}`;
+}
+
+function getDivisionSteps(dividend, divisor, quotient) {
+    const steps = [];
+    let currentDividend = '';
+    let currentPosition = 0;
+    const divisorNum = parseInt(divisor);
+    const quotientStr = quotient.toString();
+    
+    for (let i = 0; i < quotientStr.length; i++) {
+        // Bring down digits until currentDividend >= divisor
+        while (currentPosition < dividend.length) {
+            currentDividend += dividend[currentPosition];
+            currentPosition++;
+            
+            if (parseInt(currentDividend) >= divisorNum || currentPosition === dividend.length) {
+                break;
+            }
+        }
+        
+        const currentNum = parseInt(currentDividend);
+        const quotientDigit = parseInt(quotientStr[i]);
+        const product = quotientDigit * divisorNum;
+        const stepRemainder = currentNum - product;
+        
+        steps.push({
+            currentNumber: currentDividend,
+            quotientDigit: quotientDigit,
+            product: product,
+            remainder: stepRemainder,
+            position: currentPosition,
+            broughtDown: i > 0 // This step involved bringing down a digit
+        });
+        
+        // Prepare for next iteration
+        currentDividend = stepRemainder.toString();
+        if (currentDividend === '0') {
+            currentDividend = '';
+        }
+    }
+    
+    return steps;
+}
+
+function formatDivisionSteps(steps, dividendDisplay, divisorDisplay, quotientDisplay, remainderDisplay) {
+    const lines = [];
+    
+    // Line 1: divisor|dividend|quotient
+    lines.push(`<span class="divisor-orange">${divisorDisplay}</span>|${dividendDisplay}|<span class="quotient-green">${quotientDisplay}</span>`);
+    
+    // Process each step
+    let currentIndent = 0;
+    let previousRemainderLength = 0;
+    
+    for (let i = 0; i < steps.length; i++) {
+        const step = steps[i];
+        
+        // Calculate indent for this step
+        if (i === 0) {
+            // First step: product goes under the first part of dividend
+            const productStr = step.product.toString();
+            const productDisplay = convertDigits(productStr, 'en', currentLang);
+            const dividendPart = step.currentNumber;
+            
+            // Align product under the dividend part
+            const spaces = ' '.repeat(divisorDisplay.length + 1);
+            const extraSpaces = ' '.repeat(dividendPart.length - productStr.length);
+            lines.push(`${spaces}${productDisplay}${extraSpaces} `);
+            
+            // Horizontal line
+            const lineLength = Math.max(productStr.length, dividendPart.length);
+            const lineChars = getLineChars(lineLength);
+            lines.push(`${spaces}${lineChars}`);
+            
+            previousRemainderLength = step.remainder.toString().length;
+            currentIndent = divisorDisplay.length + 1 + (dividendPart.length - previousRemainderLength);
+        } else {
+            // Subsequent steps: show brought down number and product
+            
+            // Get current number with proper conversion
+            const currentNumStr = step.currentNumber;
+            const currentNumDisplay = convertDigits(currentNumStr, 'en', currentLang);
+            
+            // Highlight only the brought-down digit if enabled
+            let displayNum = currentNumDisplay;
+            if (highlightBroughtDownEnabled && step.broughtDown) {
+                // Find which digit was brought down (last digit)
+                const regularPart = currentNumDisplay.slice(0, -1);
+                const broughtDownDigit = currentNumDisplay.slice(-1);
+                displayNum = `${regularPart}<span class="brought-down-highlight">${broughtDownDigit}</span>`;
+            }
+            
+            // Show current number
+            const spaces = ' '.repeat(currentIndent);
+            lines.push(`${spaces}${displayNum}`);
+            
+            // Show product
+            const productStr = step.product.toString();
+            const productDisplay = convertDigits(productStr, 'en', currentLang);
+            lines.push(`${spaces}${productDisplay}`);
+            
+            // Horizontal line (except after last step if remainder is 0)
+            if (i < steps.length - 1 || (i === steps.length - 1 && parseInt(remainderDisplay) > 0)) {
+                const lineLength = Math.max(currentNumStr.length, productStr.length);
+                const lineChars = getLineChars(lineLength);
+                lines.push(`<div class="division-line horizontal-line">${spaces}<span class="dash">${lineChars}</span></div>`);
+            }
+            
+            // Update indent for next step
+            previousRemainderLength = step.remainder.toString().length;
+            if (step.remainder > 0) {
+                currentIndent += currentNumStr.length - previousRemainderLength;
+            } else {
+                currentIndent += currentNumStr.length;
+            }
+        }
+    }
+    
+    // Add final remainder if any
+    if (parseInt(remainderDisplay) > 0) {
+        const spaces = ' '.repeat(currentIndent);
+        lines.push(`${spaces}<span class="remainder-green">${remainderDisplay}</span>`);
+    }
+    
+    return lines;
+}
+
+function getLineChars(length) {
+    // For extended lines, use multiple dash characters per position
+    if (extendedLinesEnabled) {
+        // Use 3 dash characters per position for a much longer line
+        const extendedDash = '───'; // Three dash characters
+        return extendedDash.repeat(length);
+    } else {
+        // For normal lines, use single dash
+        return '-'.repeat(length);
+    }
+}
+
+// Improved Bangla spelling function from the provided code
+function spellBanglaNumber(num) {
+    // Handle zero
+    if (num === '0') return 'শূন্য';
+    
+    // Remove leading zeros
+    num = num.replace(/^0+/, '');
+    if (num === '') return 'শূন্য';
+    
+    const numInt = BigInt(num);
+    
+    // For numbers 1-99, use the dictionary directly
+    if (numInt < 100n) {
+        return banglaNumbers[Number(num)];
+    }
+    
+    // For larger numbers, use Bangla numbering system
+    // Bangla system: groups of 2 digits except the last 3 digits
+    let temp = num;
+    const groups = [];
+    
+    // Get last 3 digits first
+    if (temp.length > 3) {
+        groups.unshift(temp.slice(-3));
+        temp = temp.slice(0, -3);
+    } else {
+        groups.unshift(temp);
+        temp = '';
+    }
+    
+    // Then groups of 2 digits
+    while (temp.length > 0) {
+        if (temp.length >= 2) {
+            groups.unshift(temp.slice(-2));
+            temp = temp.slice(0, -2);
+        } else {
+            groups.unshift(temp);
+            temp = '';
+        }
+    }
+    
+    // Bangla scales
+    const banglaScales = ["", "হাজার", "লক্ষ", "কোটি", "শত কোটি", "হাজার কোটি", "লক্ষ কোটি", "কোটি কোটি"];
+    
+    const spelledGroups = groups.map((group, index) => {
+        const groupNum = parseInt(group);
+        if (groupNum === 0) return '';
+        
+        const scaleIndex = groups.length - index - 1;
+        const scale = banglaScales[scaleIndex] || '';
+        
+        let groupWords = '';
+        
+        if (groupNum < 100) {
+            groupWords = banglaNumbers[groupNum];
+        } else {
+            // 3-digit group (only possible for first group)
+            const hundreds = Math.floor(groupNum / 100);
+            const remainder = groupNum % 100;
+            groupWords = banglaNumbers[hundreds] + ' শত';
+            if (remainder > 0) {
+                groupWords += ' ' + banglaNumbers[remainder];
+            }
+        }
+        
+        if (scale && groupWords) {
+            groupWords += ' ' + scale;
+        }
+        
+        return groupWords;
+    }).filter(words => words !== '');
+    
+    return spelledGroups.join(' ');
+}
+
+function spellOutNumber(num, lang) {
+    if (lang === 'en') {
+        return spellEnglishNumber(num);
+    } else {
+        return spellBanglaNumber(num);
+    }
+}
+
+function spellEnglishNumber(num) {
+    // Handle zero
+    if (num === '0') {
+        return 'zero';
+    }
+    
+    const t = translations['en'];
+    const groups = [];
+    
+    // Split into groups of 3 digits
+    for (let i = num.length; i > 0; i -= 3) {
+        const start = Math.max(0, i - 3);
+        groups.unshift(num.slice(start, i));
+    }
+    
+    const spelledGroups = groups.map((group, index) => {
+        const groupNum = parseInt(group);
+        if (groupNum === 0) return '';
+        
+        const scaleIndex = groups.length - index - 1;
+        const scale = t.scales[scaleIndex] || '';
+        
+        let groupWords = '';
+        
+        if (groupNum >= 100) {
+            const hundreds = Math.floor(groupNum / 100);
+            groupWords += t.units[hundreds] + ' hundred';
+            const remainder = groupNum % 100;
+            if (remainder > 0) {
+                groupWords += ' and ';
+                if (remainder < 10) {
+                    groupWords += t.units[remainder];
+                } else if (remainder < 20) {
+                    groupWords += t.teens[remainder - 10];
+                } else {
+                    const tensDigit = Math.floor(remainder / 10);
+                    const onesDigit = remainder % 10;
+                    groupWords += t.tens[tensDigit];
+                    if (onesDigit > 0) {
+                        groupWords += '-' + t.units[onesDigit];
+                    }
+                }
+            }
+        } else if (groupNum >= 10) {
+            if (groupNum < 20) {
+                groupWords = t.teens[groupNum - 10];
+            } else {
+                const tensDigit = Math.floor(groupNum / 10);
+                const onesDigit = groupNum % 10;
+                groupWords = t.tens[tensDigit];
+                if (onesDigit > 0) {
+                    groupWords += '-' + t.units[onesDigit];
+                }
+            }
+        } else {
+            groupWords = t.units[groupNum];
+        }
+        
+        if (scale) {
+            groupWords += ' ' + scale;
+        }
+        
+        return groupWords;
+    }).filter(words => words !== '');
+    
+    return spelledGroups.join(', ');
+}
+
+function showError(message) {
+    elements.errorMessage.textContent = message;
+    elements.errorMessage.style.display = 'block';
+    elements.loadingSpinner.classList.remove('spinning');
+}
+</script>
+</body>
+</html>
